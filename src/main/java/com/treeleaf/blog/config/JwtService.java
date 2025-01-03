@@ -17,11 +17,13 @@ import java.util.concurrent.TimeUnit;
 public class JwtService {
 
 	private static final String SECRET = "OZMd+NI8c2xensVNT+KTQV4w3RR0+mu+Ivu0Z/Syyxm7nI9jKJr8yWvGrBgEZqTcxLiysPbGAA8noRfFZtymRg==";
-	private static final long VALIDITY = TimeUnit.DAYS.toMillis(1); // 1 day
+	private static final long VALIDITY = TimeUnit.DAYS.toMillis(1);
 
-	public String generateToken(UserDetails userDetails) {
+	public String generateToken(CustomUserDetails userDetails) {
 		Map<String, Object> claims = new HashMap<>();
-		claims.put("iss", "http://localhost:8080/blog");
+		claims.put("userId", userDetails.getId());
+		claims.put("userType", userDetails.getUserType());
+
 		return Jwts.builder()
 				.setClaims(claims)
 				.setSubject(userDetails.getUsername())
@@ -33,6 +35,14 @@ public class JwtService {
 
 	public String extractUsername(String jwt) {
 		return getClaims(jwt).getSubject();
+	}
+
+	public Long extractId(String jwt) {
+		return getClaims(jwt).get("userId", Long.class);
+	}
+
+	public String extractUserType(String jwt) {
+		return getClaims(jwt).get("userType", String.class);
 	}
 
 	public boolean isTokenValid(String jwt, UserDetails userDetails) {

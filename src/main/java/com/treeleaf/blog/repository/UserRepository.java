@@ -2,6 +2,8 @@ package com.treeleaf.blog.repository;
 
 import com.treeleaf.blog.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -13,21 +15,17 @@ public class UserRepository {
 
     public User findByEmail(String email) {
         String sql = "SELECT * FROM user WHERE email = ?";
-        return jdbcTemplate.queryForObject(
-                sql,
-                new Object[]{email},
-                (rs, rowNum) -> {
-                    User user = new User();
-                    user.setId(rs.getInt("id"));
-                    user.setFullName(rs.getString("full_name"));
-                    user.setAddress(rs.getString("address"));
-                    user.setEmail(rs.getString("email"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRole(rs.getString("role"));
-                    return user;
-                }
-        );
+        try {
+            return jdbcTemplate.queryForObject(
+                    sql,
+                    new BeanPropertyRowMapper<>(User.class),
+                    email
+            );
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
+
 
     public User getUserById(int id) {
         String sql = "SELECT * FROM user WHERE id = ?";

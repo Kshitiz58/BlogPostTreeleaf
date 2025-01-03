@@ -21,11 +21,13 @@ public class UserServiceImpl implements UserService {
     public User loginUser(String email, String password) {
         try {
             User user = userRepository.findByEmail(email);
-            if (passwordEncoder.matches(password, user.getPassword())) {
-                return user;
-            } else {
+            if(user == null){
+                throw new ResourceNotFoundException("User doesn't exist with this email: "+ email);
+            }
+            if (!passwordEncoder.matches(password, user.getPassword())) {
                 throw new ResourceNotFoundException("Bad Credentials.");
             }
+            return user;
         } catch (ResourceNotFoundException | IllegalStateException e) {
             throw e;
         } catch (Exception e) {
@@ -36,7 +38,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public int registerUser(User user) {
         try {
+            User existingUser = userRepository.findByEmail(user.getEmail());
+            if (existingUser != null) {
+                throw new IllegalArgumentException("User with the same email already exists.");
+            }
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             return userRepository.createUser(user);
+        }catch (IllegalArgumentException e){
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Internal server error: " + e.getMessage(), e);
         }
@@ -56,8 +65,9 @@ public class UserServiceImpl implements UserService {
         try {
             User existingUser = userRepository.getUserById((user.getId()));
             if (existingUser == null) {
-                throw new ResourceNotFoundException("User not found with ID: " + user.getId());
+                throw new ResourceNotFoundException("User not found with Id: " + user.getId());
             }
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             return userRepository.updateUser(user);
         }catch (ResourceNotFoundException e){
             throw e;

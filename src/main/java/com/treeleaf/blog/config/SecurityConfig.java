@@ -1,5 +1,7 @@
 package com.treeleaf.blog.config;
 
+import com.zaxxer.hikari.HikariDataSource;
+import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,12 +18,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.sql.DataSource;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Autowired
-    private NewUserService newUserService;
+    private DataSource dataSource;
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -31,15 +38,13 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**", "/error/**").permitAll()
-                        .requestMatchers("/home", "/signup", "/authenticate").permitAll()
+                        .requestMatchers( "/api/user/signup", "/api/security/login").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-//                        .successHandler(new AuthSuccessHandler())
                         .permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -48,7 +53,7 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return newUserService;
+        return customUserDetailsService;
     }
 
     @Bean
@@ -59,7 +64,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(newUserService);
+        provider.setUserDetailsService(customUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
@@ -67,5 +72,12 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager() {
         return new ProviderManager(authenticationProvider());
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        if (dataSource instanceof HikariDataSource) {
+            ((HikariDataSource) dataSource).close();
+        }
     }
 }

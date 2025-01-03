@@ -1,6 +1,5 @@
 package com.treeleaf.blog.config;
 
-import com.msp.assignment.enumerated.UserType;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,18 +15,26 @@ public class CustomUserDetails implements UserDetails {
     private Long id;
     private String email;
     private String password;
-    private UserType userType;
+    private String userType;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(Long id, String email, String password, UserType userType) {
+    public CustomUserDetails(Long id, String email, String password, String userType) {
         this.id = id;
         this.email = email;
         this.password = password;
         this.userType = userType;
+        this.authorities = determineAuthorities(userType);
     }
 
-    public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
-        this.authorities = authorities;
+    public Collection<? extends GrantedAuthority> determineAuthorities(String userType) {
+        switch (userType.toUpperCase()) {
+            case "ADMIN":
+                return Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            case "USER":
+                return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+            default:
+                return Collections.emptyList();
+        }
     }
 
     @Override
@@ -35,17 +42,8 @@ public class CustomUserDetails implements UserDetails {
         return this.authorities != null ? this.authorities : List.of();
     }
 
-    public Collection<? extends GrantedAuthority> determineAuthorities(UserType userType) {
-        switch (userType) {
-            case ADMIN:
-                return Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
-            case ASSIGNMENT_CREATOR:
-                return Collections.singletonList(new SimpleGrantedAuthority("ROLE_CREATOR"));
-            case ASSIGNMENT_DOER:
-                return Collections.singletonList(new SimpleGrantedAuthority("ROLE_DOER"));
-            default:
-                return Collections.emptyList();
-        }
+    public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
+        this.authorities = authorities;
     }
 
     @Override

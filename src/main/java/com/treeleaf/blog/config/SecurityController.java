@@ -36,13 +36,13 @@ public class SecurityController {
     public ResponseEntity<?> loginAndGetToken(@RequestBody LoginForm loginForm) {
         log.info("Inside loginAndGetToken method of SecurityController.");
         try {
-            User user = userService.loginUser(loginForm.email(), loginForm.password());
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginForm.email(), loginForm.password()));
+            userService.loginUser(loginForm.email(), loginForm.password());
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginForm.email(), loginForm.password())
+            );
 
             if (authentication.isAuthenticated()) {
                 CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-                Long id = userDetails.getId();
-
                 String token = jwtService.generateToken(userDetails);
                 return ResponseEntity.ok(token);
             } else {

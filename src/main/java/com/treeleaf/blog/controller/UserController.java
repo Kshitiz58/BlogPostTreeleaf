@@ -19,12 +19,14 @@ public class UserController {
 
     private Logger log = LoggerFactory.getLogger(UserController.class);
 
-    @PostMapping("/")
+    @PostMapping("/signup")
     public ResponseEntity<?> signupUser(@RequestBody User user) {
         log.info("Inside signupUser method of UserController.");
         try {
             userService.registerUser(user);
             return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully.");
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error: " + e.getMessage());
         }
