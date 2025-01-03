@@ -32,8 +32,8 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable int id) {
+    @GetMapping("/")
+    public ResponseEntity<?> getUserById(@RequestParam int id) {
         log.info("Inside getUserById method of UserController.");
         try {
             User user = userService.getUserById(id);
@@ -43,8 +43,8 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable int id, @RequestBody User user) {
+    @PutMapping("/")
+    public ResponseEntity<?> updateUser(@RequestParam int id, @RequestBody User user) {
         log.info("Inside updateUser method of UserController.");
         try {
             user.setId(id);
@@ -57,8 +57,8 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable int id) {
+    @DeleteMapping("/")
+    public ResponseEntity<?> deleteUser(@RequestParam int id) {
         log.info("Inside deleteUser method of UserController.");
         try {
             userService.deleteUser(id);

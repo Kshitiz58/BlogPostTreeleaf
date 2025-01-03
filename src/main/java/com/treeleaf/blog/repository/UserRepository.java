@@ -26,7 +26,6 @@ public class UserRepository {
         }
     }
 
-
     public User getUserById(int id) {
         String sql = "SELECT * FROM user WHERE id = ?";
         return jdbcTemplate.queryForObject(
@@ -38,7 +37,6 @@ public class UserRepository {
                     user.setFullName(rs.getString("full_name"));
                     user.setAddress(rs.getString("address"));
                     user.setEmail(rs.getString("email"));
-                    user.setPassword(rs.getString("password"));
                     user.setRole(rs.getString("role"));
                     return user;
                 }
@@ -59,14 +57,12 @@ public class UserRepository {
     }
 
     public int updateUser(User user) {
-        String sql = "UPDATE user SET full_name = ?, address = ?, email = ?, password = ?, role = ? WHERE id = ?";
+        String sql = "UPDATE user SET full_name = ?, address = ?, password = ? WHERE id = ?";
         return jdbcTemplate.update(
                 sql,
                 user.getFullName(),
                 user.getAddress(),
-                user.getEmail(),
                 user.getPassword(),
-                user.getRole(),
                 user.getId()
         );
     }

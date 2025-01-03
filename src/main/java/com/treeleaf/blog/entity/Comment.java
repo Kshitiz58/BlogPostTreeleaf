@@ -7,8 +7,11 @@ import lombok.Data;
 @Entity
 public class Comment {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private Long userId;
-    private Long blogId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Blogs blogs;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private User user;
     private String comment;
 }
